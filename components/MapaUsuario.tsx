@@ -69,12 +69,12 @@ export default function MapaUsuario({ reportes }: { reportes: any[] }) {
                   Estado: {rep.estado}
                 </span>
 
-                {rep.foto_url && (
-                  <img 
+               {rep.foto_url && (
+                    <img 
                     src={rep.foto_url} 
                     alt="Evidencia" 
-                    className="w-full h-auto mt-3 rounded border border-gray-200" 
-                  />
+                    className="w-full h-48 object-cover mt-3 rounded-lg border border-slate-200" 
+                    />
                 )}
               </div>
             </Popup>
