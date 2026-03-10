@@ -29,11 +29,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-100 p-8 flex flex-col font-sans">
-      <header className="mb-8 flex-none">
-        <h1 className="text-3xl font-bold text-slate-800">Panel de Control Municipal</h1>
-        <p className="text-slate-500">Visualización en tiempo real de problemas reportados por la comunidad.</p>
-      </header>
-      
+    
       {/* contenedor principal para anclar el mapa */}
       <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative min-h-[600px]">
         {cargando ? (
