@@ -21,30 +21,8 @@ Plataforma ciudadana desarrollada para la Municipalidad de Coinco, diseñada par
 
 ## Instrucciones de Ejecución Local
 
-Para ejecutar este proyecto en un entorno de desarrollo local, siga los siguientes pasos:
+1. **Instalación de dependencias:** `npm install`
+2. **Configuración:** Crear `.env.local` con las llaves de Supabase.
+3. **Ejecución:** `npm run dev`
 
-1. **Instalación de dependencias:**
-   Ejecute el siguiente comando en la terminal dentro del directorio raíz del proyecto:
-   ```bash
-   npm install
-   ```
-
-2. **Configuración de Variables de Entorno:**
-   Cree un archivo llamado `.env.local` en la raíz del proyecto y defina las credenciales de conexión a la base de datos:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=su_url_de_supabase
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=su_llave_anon_de_supabase
-   ```
-
-3. **Inicialización del servidor de desarrollo:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Acceso a la plataforma:**
-   * Portal de ingreso de reportes: `http://localhost:3000`
-   * Panel de administración: `http://localhost:3000/admin`
-
-## Despliegue
-
-Este repositorio cuenta con integración continua (CI/CD) mediante Vercel. Cada confirmación (`commit`) realizada sobre la rama principal (`main`) activa automáticamente una nueva construcción y despliegue en el entorno de producción.
+> **Nota:** Por seguridad, las credenciales de la base de datos no se sincronizan con este repositorio.
