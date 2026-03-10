@@ -1,31 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Camera, Send, CheckCircle2, ChevronDown } from "lucide-react";
+import { MapPin, Camera, Send, CheckCircle2, ChevronDown, Map } from "lucide-react";
 import { supabase } from "../lib/supabase"; 
+import Link from "next/link";
 
 export default function Home() {
   const [ubicacion, setUbicacion] = useState<{ lat: number; lng: number } | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
-
   const [categoria, setCategoria] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [foto, setFoto] = useState<File | null>(null);
-  
   const [enviando, setEnviando] = useState(false);
   const [exito, setExito] = useState(false);
 
   const obtenerUbicacion = () => {
     setCargando(true);
     setError("");
-
     if (!navigator.geolocation) {
       setError("Tu navegador no soporta la geolocalización.");
       setCargando(false);
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setUbicacion({
@@ -47,26 +44,19 @@ export default function Home() {
       setError("Por favor completa todos los campos y adjunta una foto.");
       return;
     }
-
     setEnviando(true);
     setError("");
-
     try {
       const extension = foto.name.split('.').pop();
       const nombreArchivo = `${Math.random()}.${extension}`;
-      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('fotos_reportes')
         .upload(nombreArchivo, foto);
-
       if (uploadError) throw uploadError;
-
       const { data: publicUrlData } = supabase.storage
         .from('fotos_reportes')
         .getPublicUrl(nombreArchivo);
-
       const fotoUrl = publicUrlData.publicUrl;
-
       const { error: dbError } = await supabase
         .from('reportes')
         .insert([
@@ -80,9 +70,7 @@ export default function Home() {
             estado: 'Pendiente'
           }
         ]);
-
       if (dbError) throw dbError;
-
       setExito(true);
     } catch (err) {
       console.error(err);
@@ -95,9 +83,7 @@ export default function Home() {
   if (exito) {
     return (
       <main className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center font-sans relative overflow-hidden">
-     
         <div className="absolute inset-0 z-0 opacity-20 bg-[url('/logomuni.png')] bg-center bg-no-repeat bg-contain m-8"></div>
-        
         <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center space-y-4 relative z-10">
           <CheckCircle2 size={60} className="text-green-500 mx-auto" />
           <h2 className="text-2xl font-bold text-gray-800">¡Reporte Enviado!</h2>
@@ -115,11 +101,18 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center font-sans relative overflow-hidden">
-      
-    
+      <div className="absolute top-4 right-4 z-50">
+        <Link 
+          href="/ver-reportes" 
+          className="flex items-center gap-2 bg-white hover:bg-slate-100 text-blue-600 px-4 py-2 rounded-lg shadow-md border border-slate-200 transition-all font-medium text-sm"
+        >
+          <Map size={18} />
+          Ver mapa de reportes
+        </Link>
+      </div>
+
       <div className="absolute inset-0 z-0 opacity-50 bg-[url('/logomuni.png')] bg-center bg-no-repeat bg-contain m-4 md:m-16 pointer-events-none"></div>
 
-     
       <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center relative z-10">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Reportes Municipales</h1>
         <p className="text-gray-500 mb-6">Ayúdanos a mejorar nuestra comuna reportando problemas en la vía pública.</p>

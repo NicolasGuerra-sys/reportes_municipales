@@ -23,7 +23,7 @@ export default function AdminDashboard() {
       }
       setCargando(false);
     };
-
+    
     cargarReportes();
   }, []);
 
