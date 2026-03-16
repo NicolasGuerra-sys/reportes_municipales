@@ -1,47 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { supabase } from "../../lib/supabase";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 
-const Mapa = dynamic(() => import("../../components/Mapa"), { ssr: false });
+const MapaAdmin = dynamic(() => import("../../components/Mapa"), { ssr: false });
 
-export default function AdminDashboard() {
+export default function AdminPage() {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [reportes, setReportes] = useState<any[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const cargarReportes = async () => {
-      const { data, error } = await supabase
-        .from("reportes")
-        .select("*");
-
-      if (error) {
-        console.error("Error cargando reportes:", error);
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        router.push("/login");
       } else {
+        setSession(currentSession);
+        const { data } = await supabase.from("reportes").select("*");
         setReportes(data || []);
       }
-      setCargando(false);
+      setLoading(false);
     };
-    
-    cargarReportes();
-  }, []);
+    checkSession();
+  }, [router]);
 
-  return (
-    <div className="min-h-screen bg-slate-100 p-8 flex flex-col font-sans">
-    
-      {/* contenedor principal para anclar el mapa */}
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative min-h-[600px]">
-        {cargando ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-slate-500 text-lg animate-pulse">Cargando mapa y datos territoriales...</p>
-          </div>
-        ) : (
-          <div className="absolute inset-0">
-            <Mapa reportes={reportes} />
-          </div>
-        )}
-      </div>
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-slate-50">
+      <div className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Verificando sesión...</div>
     </div>
   );
+
+  return session ? <MapaAdmin reportes={reportes} /> : null;
 }

@@ -32,7 +32,6 @@ export default function VerReportesPage() {
           <h1 className="text-xl font-bold text-slate-800 leading-tight">Mapa de Reportes - Coinco</h1>
           <p className="text-xs text-slate-500 font-medium">Estado de incidencias en tiempo real.</p>
         </div>
-        
         <div className="flex flex-wrap gap-x-3 gap-y-2 bg-slate-50 p-2 md:px-4 rounded-lg border border-slate-200 shadow-inner">
           <div className="flex items-center gap-1.5">
             <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="P" className="h-4 w-auto" />

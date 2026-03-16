@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { supabase } from "../lib/supabase";
+import { useRouter } from "next/navigation";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
@@ -53,6 +54,7 @@ const iconVerde = new L.Icon({
 
 export default function Mapa({ reportes }: { reportes: any[] }) {
   const centro = [-34.26, -70.95];
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todas");
@@ -70,6 +72,11 @@ export default function Mapa({ reportes }: { reportes: any[] }) {
     return match ? match[0] : "0";
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
   const actualizarEstado = async (id: string, nuevoEstado: string) => {
     const { error } = await supabase.from("reportes").update({ estado: nuevoEstado }).eq("id", id);
     if (error) alert("Error: " + error.message);
@@ -77,9 +84,9 @@ export default function Mapa({ reportes }: { reportes: any[] }) {
   };
 
   const eliminarReporte = async (id: string) => {
-    if (confirm("¿Estás seguro?")) {
+    if (confirm("¿Eliminar este reporte permanentemente?")) {
       const { error } = await supabase.from("reportes").delete().eq("id", id);
-      if (error) alert("Error: " + error.message);
+      if (error) alert("Error al eliminar: " + error.message);
       else window.location.reload();
     }
   };
@@ -108,65 +115,77 @@ export default function Mapa({ reportes }: { reportes: any[] }) {
   const hayFiltrosActivos = filtroCategoria !== "Todas" || filtroEstado !== "Todos";
 
   return (
-    <div className="fixed inset-0 w-full h-full flex flex-col bg-white overflow-hidden">
-      <header className="shrink-0 z-[1003] bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100">
+    <div className="fixed inset-0 w-full h-full flex flex-col bg-white overflow-hidden font-sans text-slate-900">
+      <header className="shrink-0 z-[1003] bg-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 shadow-sm">
         <div className="flex items-center gap-6">
           <img src="/logom.png" alt="Logo" className="h-16 w-auto object-contain" />
           <div className="flex flex-col">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">Panel de Control Municipal</h1>
-            <p className="text-sm text-slate-600 font-medium font-sans">Gestión interna de reportes comunitarios.</p>
+            <h1 className="text-2xl font-black tracking-tight leading-none mb-1 uppercase">Panel de Control Municipal</h1>
+            <p className="text-sm text-slate-500 font-medium">Gestión interna de reportes comunitarios</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-2 bg-slate-100 p-2 md:px-4 rounded-lg border border-slate-200 shadow-inner font-sans">
-          <div className="flex items-center gap-1.5">
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="P" className="h-4 w-auto" />
-            <span className="text-[10px] text-red-700 font-bold uppercase">Pendiente</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden lg:flex flex-wrap gap-x-4 gap-y-2 bg-slate-100 p-2 px-4 rounded-xl border border-slate-200 shadow-inner">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-700">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png" alt="P" className="h-4 w-auto" />
+              <span>Pendiente</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-blue-700 border-l pl-4 border-slate-300">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png" alt="M" className="h-4 w-auto" />
+              <span>Muni</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-orange-700 border-l pl-4 border-slate-300">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" alt="C" className="h-4 w-auto" />
+              <span>CGE</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-purple-700 border-l pl-4 border-slate-300">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png" alt="E" className="h-4 w-auto" />
+              <span>Essbio</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-green-700 border-l pl-4 border-slate-300">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png" alt="R" className="h-4 w-auto" />
+              <span>Resuelto</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 border-l pl-4 border-slate-300">
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png" alt="M" className="h-4 w-auto" />
-            <span className="text-[10px] text-blue-700 font-bold uppercase">Muni</span>
-          </div>
-          <div className="flex items-center gap-1.5 border-l pl-4 border-slate-300">
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png" alt="C" className="h-4 w-auto" />
-            <span className="text-[10px] text-orange-700 font-bold uppercase">CGE</span>
-          </div>
-          <div className="flex items-center gap-1.5 border-l pl-4 border-slate-300">
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png" alt="E" className="h-4 w-auto" />
-            <span className="text-[10px] text-purple-700 font-bold uppercase">Essbio</span>
-          </div>
-          <div className="flex items-center gap-1.5 border-l pl-4 border-slate-300">
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png" alt="R" className="h-4 w-auto" />
-            <span className="text-[10px] text-green-700 font-black uppercase">Resuelto</span>
-          </div>
+
+          <button 
+            onClick={handleLogout}
+            className="bg-white border-2 border-slate-200 hover:border-red-500 hover:text-red-600 text-slate-500 font-black px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2 uppercase text-xs tracking-widest active:scale-95"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+            </svg>
+            Salir
+          </button>
         </div>
       </header>
 
-      <div className="shrink-0 bg-slate-50 px-6 py-3 border-b shadow-sm flex flex-wrap items-center gap-6 z-[1001] font-sans">
+      <div className="shrink-0 bg-slate-50 px-6 py-3 border-b shadow-sm flex flex-wrap items-center gap-6 z-[1001]">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Categoría</label>
-          <select className="text-sm font-bold border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-900 appearance-none pr-10 focus:ring-2 focus:ring-blue-500 shadow-sm" style={estiloSelect} value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
-            <option value="Todas" className="text-slate-900">Todas</option>
-            {Object.entries(nombresCategorias).map(([id, nombre]) => <option key={id} value={id} className="text-slate-900">{nombre}</option>)}
+          <select className="text-sm font-bold border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-900 appearance-none pr-10 focus:ring-2 focus:ring-blue-500 shadow-sm outline-none" style={estiloSelect} value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)}>
+            <option value="Todas">Todas</option>
+            {Object.entries(nombresCategorias).map(([id, nombre]) => <option key={id} value={id}>{nombre}</option>)}
           </select>
         </div>
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Estado</label>
-          <select className={`text-sm font-bold border rounded-lg px-3 py-1.5 appearance-none pr-10 focus:ring-2 focus:ring-blue-500 shadow-sm ${filtroEstado !== 'Todos' ? colorEstado(filtroEstado) : 'bg-white text-slate-900 border-slate-300'}`} style={estiloSelect} value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
-            <option value="Todos" className="bg-white text-slate-900">Todos</option>
-            <option value="Pendiente" className="bg-white text-red-700 font-bold">Pendiente</option>
-            <option value="En proceso" className="bg-white text-blue-700 font-bold">Municipal</option>
-            <option value="En proceso CGE" className="bg-white text-orange-700 font-bold">CGE</option>
-            <option value="En proceso Essbio" className="bg-white text-purple-700 font-bold">Essbio</option>
-            <option value="Resuelto" className="bg-white text-green-700 font-bold">Resuelto</option>
+          <select className={`text-sm font-bold border rounded-lg px-3 py-1.5 appearance-none pr-10 focus:ring-2 focus:ring-blue-500 shadow-sm outline-none ${filtroEstado !== 'Todos' ? colorEstado(filtroEstado) : 'bg-white text-slate-900 border-slate-300'}`} style={estiloSelect} value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+            <option value="Todos">Todos</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="En proceso">Municipal</option>
+            <option value="En proceso CGE">CGE</option>
+            <option value="En proceso Essbio">Essbio</option>
+            <option value="Resuelto">Resuelto</option>
           </select>
         </div>
 
         {hayFiltrosActivos && (
-          <button onClick={limpiarFiltros} className="text-[10px] font-black text-slate-500 hover:text-red-700 uppercase tracking-widest border-b-2 border-slate-300 hover:border-red-500 transition-all self-end mb-1">Limpiar Filtros</button>
+          <button onClick={limpiarFiltros} className="text-[10px] font-black text-slate-400 hover:text-red-700 uppercase tracking-widest border-b-2 border-transparent hover:border-red-500 transition-all self-end mb-1">Limpiar Filtros</button>
         )}
 
-        <div className="ml-auto text-xs font-bold text-slate-600 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm font-sans">
+        <div className="ml-auto text-xs font-bold text-slate-600 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
           Mostrando: <span className="text-blue-600 font-black">{reportesFiltrados.length}</span> de <span className="text-slate-400">{reportes.length}</span>
         </div>
       </div>
@@ -184,10 +203,10 @@ export default function Mapa({ reportes }: { reportes: any[] }) {
             return (
               <Marker key={rep.id} position={[rep.latitud, rep.longitud]} icon={pin}>
                 <Popup maxWidth={300}>
-                  <div className="text-sm p-1 max-h-[500px] overflow-y-auto custom-scrollbar font-sans">
+                  <div className="text-sm p-1 max-h-[500px] overflow-y-auto custom-scrollbar">
                     <div className="mb-2">
-                      <span className="text-slate-900 font-bold text-lg">Categoría: </span>
-                      <span className="text-slate-800 text-lg">{nombresCategorias[extraerId(rep.titulo)] || "Reporte"}</span>
+                      <span className="text-slate-900 font-bold text-lg underline decoration-blue-500">Categoría:</span>
+                      <span className="text-lg ml-2 font-medium">{nombresCategorias[extraerId(rep.titulo)] || "Reporte"}</span>
                     </div>
                     <div className="mb-1 text-slate-800">
                       <span className="text-slate-900 font-bold">Motivo: </span>{rep.descripcion}
@@ -218,7 +237,13 @@ export default function Mapa({ reportes }: { reportes: any[] }) {
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><IconoLupa /></div>
                       </div>
                     )}
-                    <button onClick={() => eliminarReporte(rep.id)} className="w-full bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold py-2 rounded-lg uppercase hover:bg-red-600 hover:text-white hover:border-red-700 transition-all tracking-wider">Eliminar Reporte</button>
+                    
+                    <button 
+                      onClick={() => eliminarReporte(rep.id)} 
+                      className="w-full bg-red-50 text-red-600 border border-red-200 text-[11px] font-black py-2.5 rounded-lg uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm active:scale-95"
+                    >
+                      Eliminar Reporte
+                    </button>
                   </div>
                 </Popup>
               </Marker>

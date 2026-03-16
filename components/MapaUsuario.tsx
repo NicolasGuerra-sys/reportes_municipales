@@ -99,7 +99,7 @@ export default function MapaUsuario({ reportes }: { reportes: any[] }) {
           value={filtroCategoria}
           onChange={(e) => setFiltroCategoria(e.target.value)}
         >
-          <option value="Todas" className="text-slate-900">Categorías</option>
+          <option value="Todas" className="text-slate-900">Todas las categorías</option>
           {Object.entries(nombresCategorias).map(([id, nombre]) => (
             <option key={id} value={id} className="text-slate-900 font-medium">{nombre}</option>
           ))}
@@ -110,7 +110,7 @@ export default function MapaUsuario({ reportes }: { reportes: any[] }) {
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
         >
-          <option value="Todos" className="text-slate-900">Estados</option>
+          <option value="Todos" className="text-slate-900">Todos los estados</option>
           <option value="Pendiente" className="text-slate-900 font-medium">Pendiente</option>
           <option value="En proceso" className="text-slate-900 font-medium">Municipal</option>
           <option value="En proceso CGE" className="text-slate-900 font-medium">CGE</option>
@@ -119,7 +119,7 @@ export default function MapaUsuario({ reportes }: { reportes: any[] }) {
         </select>
       </div>
 
-      <div className="flex-grow relative h-full w-full font-sans">
+      <div className="flex-grow relative h-full w-full">
         <MapContainer center={centro as any} zoom={14} style={{ height: "100%", width: "100%" }}>
           <TileLayer url="https://mt1.google.com/vt/lyrs=y&hl=es&x={x}&y={y}&z={z}" attribution="&copy; Google" />
           {reportesFiltrados.map((rep) => { 
@@ -132,12 +132,12 @@ export default function MapaUsuario({ reportes }: { reportes: any[] }) {
             return (
               <Marker key={rep.id} position={[rep.latitud, rep.longitud]} icon={pin}>
                 <Popup maxWidth={280}>
-                  <div className="text-sm p-1 font-sans">
+                  <div className="text-sm p-1">
                     <div className="mb-2">
                       <span className="text-slate-900 font-bold text-lg">Categoría: </span>
                       <span className="text-slate-800 text-lg">{nombresCategorias[extraerId(rep.titulo)] || "Reporte"}</span>
                     </div>
-                    <div className="mb-1 text-slate-800">
+                    <div className="mb-1 text-slate-800 leading-tight">
                       <span className="text-slate-900 font-bold">Motivo: </span>{rep.descripcion}
                     </div>
                     <div className="mb-3 text-[13px] text-slate-700">
