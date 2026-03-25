@@ -3,6 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
+import Image from "next/image"; //Para usar imágenes en Next.js
+import { useRouter } from "next/navigation"; // Para el botón volver
+import { ArrowLeft } from "lucide-react"; // Icono para el botón volver
 
 const MapaSOS = dynamic(() => import("@/components/MapaSOS"), { ssr: false });
 
@@ -10,6 +13,7 @@ export default function MonitorSOS() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [ultimaCoords, setUltimaCoords] = useState<[number, number] | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const router = useRouter(); 
 
   useEffect(() => {
     fetchAlertas();
@@ -57,10 +61,10 @@ export default function MonitorSOS() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 font-sans overflow-hidden text-white">
+    <div className="flex h-screen bg-slate-950 font-sans overflow-hidden text-white relative">
       <audio ref={audioRef} src="/warning.mpeg" preload="auto" />
 
-      <aside className="w-96 border-r border-slate-800 flex flex-col bg-slate-900 shadow-2xl z-10">
+      <aside className="w-96 border-r border-slate-800 flex flex-col bg-slate-900 shadow-2xl z-20 relative">
         <div className="p-6 border-b border-slate-800 bg-slate-900/50">
           <h2 className="text-2xl font-black tracking-tighter uppercase text-white">Central SOS</h2>
           <div className="flex items-center gap-2 mt-1 text-red-500">
@@ -90,9 +94,17 @@ export default function MonitorSOS() {
         </div>
       </aside>
 
-      <main className="flex-1 relative">
+      <main className="flex-1 relative z-10">
         <MapaSOS alertas={alertas} ultimaCoords={ultimaCoords} />
       </main>
+     
+      <button 
+        onClick={() => router.push("/admin")} 
+        className="absolute bottom-6 right-6 z-30 flex items-center gap-2.5 text-slate-900 font-extrabold text-[12px] uppercase hover:text-red-600 transition-colors tracking-widest p-4 px-6 bg-white rounded-full border border-slate-200 shadow-xl hover:shadow-2xl active:scale-95"
+      >
+        <ArrowLeft className="w-5 h-5 text-red-600" /> Volver al Panel Principal
+      </button>
+
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default function PaginaSOS() {
     <div className="fixed inset-0 bg-[#020617] flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
       
       <div className="flex flex-col items-center mt-2 w-full">
-        <div className="relative w-32 h-32 mb-2">
+        <div className="relative w-40 h-40 mb-3">
           <Image src="/protegido.png" alt="Logo" fill priority className="object-contain" />
         </div>
         <div className="flex items-center justify-center gap-2">
