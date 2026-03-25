@@ -27,16 +27,13 @@ export default function LoginPage() {
       router.push("/admin");
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <img src="/logom.png" alt="Logo" className="h-20 mb-4 object-contain" />
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">Panel Municipal</h1>
-          <p className="text-slate-500 text-sm font-medium mt-2">Ingreso Administrativo</p>
+          <h1 className="text-slate-500 text-md font-medium font-black tracking-tight">Ingreso Administrativo</h1>
         </div>
-
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-widest">Nombre de Usuario</label>
