@@ -19,10 +19,13 @@ export default function MonitorSOS() {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'alertas' }, 
         (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setUltimaCoords([payload.new.latitud, payload.new.longitud]);
-            if (audioRef.current) {
-              audioRef.current.play().catch(() => {});
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            if (payload.new.estado === 'Activa') {
+              setUltimaCoords([payload.new.latitud, payload.new.longitud]);
+              
+              if (payload.eventType === 'INSERT' && audioRef.current) {
+                audioRef.current.play().catch(() => {});
+              }
             }
           }
           fetchAlertas();
@@ -41,6 +44,10 @@ export default function MonitorSOS() {
 
     if (!error) {
       setAlertas(data || []);
+      const activa = data?.find(a => a.estado === 'Activa');
+      if (activa && !ultimaCoords) {
+        setUltimaCoords([activa.latitud, activa.longitud]);
+      }
     }
   };
 
@@ -69,7 +76,7 @@ export default function MonitorSOS() {
                 <p className="font-black text-sm uppercase">{alerta.vecino_nombre || "Anónimo"}</p>
                 <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black">NUEVA</span>
               </div>
-              <p className="text-slate-400 text-xs font-bold mb-4 italic">
+              <p className="text-slate-400 text-[10px] font-bold mb-4 italic">
                 {new Date(alerta.created_at).toLocaleTimeString()}
               </p>
               <button 
