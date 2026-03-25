@@ -52,79 +52,78 @@ export default function PaginaSOS() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-between p-8 font-sans">
+    <div className="fixed inset-0 bg-[#020617] flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
       
-      <div className="flex flex-col items-center mt-4">
-        <div className="mb-4">
+      <div className="flex flex-col items-center mt-2 w-full">
+        <div className="relative w-32 h-32 md:w-40 md:h-40 mb-2">
           <Image 
             src="/protegido.png" 
             alt="Logo Municipalidad" 
-            width={300} 
-            height={200} 
+            fill
             priority
             className="object-contain"
           />
         </div>
-        <div className="flex items-center justify-center gap-2 mb-1">
+        <div className="flex items-center justify-center gap-2">
           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <h1 className="text-white text-2xl font-black uppercase tracking-tighter text-center">
+          <h1 className="text-white text-xl md:text-2xl font-black uppercase tracking-tighter">
             Coinco Protegido
           </h1>
         </div>
-        <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.3em] text-center">
+        <p className="text-slate-500 font-bold text-[9px] uppercase tracking-[0.3em]">
           Central de Emergencias
         </p>
       </div>
 
-      <div className="relative flex items-center justify-center">
+      <div className="relative flex items-center justify-center w-full">
         {estado === "reposo" && (
           <>
-            <div className="absolute w-80 h-80 bg-red-600/20 rounded-full animate-ping"></div>
+            <div className="absolute w-64 h-64 md:w-80 md:h-80 bg-red-600/20 rounded-full animate-ping"></div>
             <button
               onClick={enviarSOS}
-              className="relative w-64 h-64 bg-red-600 border-[12px] border-red-500 rounded-full shadow-[0_0_80px_rgba(220,38,38,0.4)] active:scale-90 transition-all flex flex-col items-center justify-center group"
+              className="relative w-56 h-56 md:w-64 md:h-64 bg-red-600 border-[10px] border-red-500 rounded-full shadow-[0_0_50px_rgba(220,38,38,0.4)] active:scale-95 transition-all flex flex-col items-center justify-center group"
             >
-              <span className="text-white text-7xl font-black tracking-tighter mb-1">SOS</span>
-              <span className="text-red-200 text-[10px] font-black uppercase tracking-widest opacity-80 group-active:opacity-100">Presionar</span>
+              <span className="text-white text-6xl md:text-7xl font-black tracking-tighter">SOS</span>
+              <span className="text-red-200 text-[10px] font-black uppercase tracking-widest opacity-80">Presionar</span>
             </button>
           </>
         )}
 
         {estado === "enviando" && (
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 border-8 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
-            <p className="text-white font-black uppercase tracking-widest text-sm italic">Localizando...</p>
+            <div className="w-16 h-16 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
+            <p className="text-white font-black uppercase tracking-widest text-xs italic">Localizando...</p>
           </div>
         )}
 
         {estado === "exito" && (
           <div className="text-center animate-in zoom-in duration-300">
-            <div className="w-64 h-64 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-[0_0_60px_rgba(22,163,74,0.4)]">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={4} stroke="currentColor" className="w-24 h-24 text-white mb-2">
+            <div className="w-56 h-56 md:w-64 md:h-64 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-[0_0_50px_rgba(22,163,74,0.4)]">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={4} stroke="currentColor" className="w-16 h-16 text-white mb-2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
-              <p className="text-white font-black uppercase text-xl tracking-tighter leading-none">Ayuda en<br/>camino</p>
+              <p className="text-white font-black uppercase text-lg tracking-tighter leading-none text-center">Ayuda en<br/>camino</p>
             </div>
             <button 
               onClick={() => setEstado("reposo")} 
-              className="mt-12 text-slate-500 font-black text-xs uppercase underline tracking-widest"
+              className="mt-8 text-slate-500 font-black text-[10px] uppercase underline tracking-widest"
             >
-              Cancelar / Volver
+              Volver
             </button>
           </div>
         )}
       </div>
 
-      <div className="w-full max-w-xs">
+      <div className="w-full max-w-xs mb-4">
         {error && (
-          <div className="bg-red-950/50 border border-red-800 p-4 rounded-2xl mb-6">
-            <p className="text-red-400 text-[11px] font-bold text-center leading-tight">{error}</p>
+          <div className="bg-red-950/50 border border-red-800 p-3 rounded-xl mb-4">
+            <p className="text-red-400 text-[10px] font-bold text-center leading-tight">{error}</p>
           </div>
         )}
         
-        <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 shadow-inner">
-          <p className="text-slate-500 text-[9px] font-black uppercase text-center leading-relaxed">
-            Esta alerta envía tu posición GPS exacta a la central de seguridad pública de Coinco.
+        <div className="bg-slate-900/40 p-3 rounded-xl border border-slate-800/50 backdrop-blur-sm">
+          <p className="text-slate-500 text-[8px] font-black uppercase text-center leading-tight">
+            ESTA ALERTA ENVÍA TU POSICIÓN GPS EXACTA A LA CENTRAL DE SEGURIDAD PÚBLICA DE COINCO.
           </p>
         </div>
       </div>
