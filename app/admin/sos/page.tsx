@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
 
-// Esto arregla el error "window is not defined"
 const MapaSOS = dynamic(() => import("@/components/MapaSOS"), { ssr: false });
 
 export default function MonitorSOS() {
@@ -12,7 +11,7 @@ export default function MonitorSOS() {
   const [ultimaCoords, setUltimaCoords] = useState<[number, number] | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     fetchAlertas();
 
     const channel = supabase
@@ -20,27 +19,27 @@ useEffect(() => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'alertas' }, 
         (payload) => {
-          console.log("¡Cambio en tiempo real!", payload);
+          if (payload.eventType === 'INSERT') {
+            setUltimaCoords([payload.new.latitud, payload.new.longitud]);
+            if (audioRef.current) {
+              audioRef.current.play().catch(() => {});
+            }
+          }
           fetchAlertas();
         }
       )
-      .subscribe((status) => {
-        console.log("Estado de la suscripción Realtime:", status);
-      });
+      .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
-  
-const fetchAlertas = async () => {
+
+  const fetchAlertas = async () => {
     const { data, error } = await supabase
       .from("alertas")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error cargando alertas:", error);
-    } else {
-      console.log("Alertas cargadas desde DB:", data);
+    if (!error) {
       setAlertas(data || []);
     }
   };
@@ -52,7 +51,7 @@ const fetchAlertas = async () => {
 
   return (
     <div className="flex h-screen bg-slate-950 font-sans overflow-hidden text-white">
-      <audio ref={audioRef} src="/sirena.mp3" preload="auto" />
+      <audio ref={audioRef} src="/warning.mpeg" preload="auto" />
 
       <aside className="w-96 border-r border-slate-800 flex flex-col bg-slate-900 shadow-2xl z-10">
         <div className="p-6 border-b border-slate-800 bg-slate-900/50">

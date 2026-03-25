@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 
 export default function PaginaSOS() {
   const [estado, setEstado] = useState<"reposo" | "enviando" | "exito">("reposo");
@@ -17,7 +18,6 @@ export default function PaginaSOS() {
       return;
     }
 
-    // Configuración para mayor precisión en móviles
     const opciones = {
       enableHighAccuracy: true,
       timeout: 10000,
@@ -53,16 +53,29 @@ export default function PaginaSOS() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-between p-8 font-sans">
-      {/* Encabezado */}
-      <div className="text-center mt-8">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          <h1 className="text-white text-2xl font-black uppercase tracking-tighter">Coinco Protegido</h1>
+      
+      <div className="flex flex-col items-center mt-4">
+        <div className="mb-4">
+          <Image 
+            src="/protegido.png" 
+            alt="Logo Municipalidad" 
+            width={300} 
+            height={200} 
+            priority
+            className="object-contain"
+          />
         </div>
-        <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.3em]">Central de Emergencias</p>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          <h1 className="text-white text-2xl font-black uppercase tracking-tighter text-center">
+            Coinco Protegido
+          </h1>
+        </div>
+        <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.3em] text-center">
+          Central de Emergencias
+        </p>
       </div>
 
-      {/* Botón Central */}
       <div className="relative flex items-center justify-center">
         {estado === "reposo" && (
           <>
@@ -102,17 +115,16 @@ export default function PaginaSOS() {
         )}
       </div>
 
-      {/* Footer e Información */}
       <div className="w-full max-w-xs">
         {error && (
-          <div className="bg-red-950/50 border border-red-800 p-4 rounded-2xl mb-6 animate-shake">
+          <div className="bg-red-950/50 border border-red-800 p-4 rounded-2xl mb-6">
             <p className="text-red-400 text-[11px] font-bold text-center leading-tight">{error}</p>
           </div>
         )}
         
         <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 shadow-inner">
           <p className="text-slate-500 text-[9px] font-black uppercase text-center leading-relaxed">
-            Esta alerta envía tu posición GPS exacta a la central de seguridad municipal de Coinco.
+            Esta alerta envía tu posición GPS exacta a la central de seguridad pública de Coinco.
           </p>
         </div>
       </div>
