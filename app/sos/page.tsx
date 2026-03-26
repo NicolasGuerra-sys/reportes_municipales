@@ -16,7 +16,7 @@ const MOTIVOS = [
 export default function PaginaSOS() {
   const [estado, setEstado] = useState<"reposo" | "enviando" | "exito">("reposo");
   const [motivo, setMotivo] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const watchId = useRef<number | null>(null);
 
   const detenerRastreo = () => {
@@ -26,42 +26,51 @@ export default function PaginaSOS() {
     }
   };
 
-  const obtenerUbicacionConReintentos = (intentos = 0) => {
-    const opciones = {
-      // El primer intento usa redes (rápido), los siguientes fuerzan GPS (lento pero preciso)
-      enableHighAccuracy: intentos > 0, 
-      timeout: 5000, 
-      maximumAge: 0
-    };
+  const enviarSOS = () => {
+    if (!motivo) {
+      setError("Por favor, selecciona un motivo primero.");
+      return;
+    }
 
+    setEstado("enviando");
+    setError("");
+
+    if (!navigator.geolocation) {
+      setError("Tu navegador no soporta la geolocalización.");
+      setEstado("reposo");
+      return;
+    }
+
+    // Usamos la lógica de getCurrentPosition de los reportes
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { error: dbError } = await supabase.from("alertas").upsert({
-          vecino_nombre: "Vecino de Coinco",
-          latitud: pos.coords.latitude,
-          longitud: pos.coords.longitude,
-          motivo: motivo,
-          tipo_emergencia: "Boton SOS Web",
-          estado: "Activa"
-        }, { onConflict: 'vecino_nombre' });
+      async (position) => {
+        try {
+          const { error: dbError } = await supabase.from("alertas").upsert({
+            vecino_nombre: "Vecino de Coinco",
+            latitud: position.coords.latitude,
+            longitud: position.coords.longitude,
+            motivo: motivo,
+            tipo_emergencia: "Botón SOS Web",
+            estado: "Activa"
+          }, { onConflict: 'vecino_nombre' });
 
-        if (!dbError) {
+          if (dbError) throw dbError;
+
           setEstado("exito");
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          
+          // Una vez enviado con éxito, activamos el seguimiento en vivo
           activarRastreoFino();
-        }
-      },
-      (err) => {
-        // Si falla (timeout o señal débil), reintentamos hasta 3 veces automáticamente
-        if (intentos < 3) {
-          console.log(`Reintentando obtener GPS... intento ${intentos + 1}`);
-          obtenerUbicacionConReintentos(intentos + 1);
-        } else {
-          setError("Error de señal: Por favor, activa tu GPS y asegúrate de no estar en un subterráneo.");
+        } catch (err) {
+          setError("Error al conectar con la central. Intenta de nuevo.");
           setEstado("reposo");
         }
       },
-      opciones
+      (err) => {
+        setError("No pudimos obtener tu ubicación. Por favor, permite el acceso al GPS.");
+        setEstado("reposo");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
     );
   };
 
@@ -82,16 +91,6 @@ export default function PaginaSOS() {
     );
   };
 
-  const enviarSOS = () => {
-    if (!motivo) {
-      setError("Selecciona un motivo");
-      return;
-    }
-    setEstado("enviando");
-    setError(null);
-    obtenerUbicacionConReintentos(0);
-  };
-
   useEffect(() => {
     return () => detenerRastreo();
   }, []);
@@ -108,7 +107,7 @@ export default function PaginaSOS() {
 
       <div className="relative flex flex-col items-center justify-center w-full gap-8">
         {estado === "reposo" && (
-          <div className="w-full max-w-xs text-center">
+          <div className="w-full max-w-xs text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
             <label className="block text-[18px] font-black uppercase tracking-widest text-slate-500 mb-2">
               Motivo de la emergencia:
             </label>
@@ -129,7 +128,7 @@ export default function PaginaSOS() {
                 onClick={enviarSOS}
                 disabled={!motivo}
                 className={`relative w-56 h-56 rounded-full border-[10px] transition-all flex flex-col items-center justify-center ${
-                  motivo ? "bg-red-600 border-red-500 active:scale-95" : "bg-slate-800 border-slate-700 opacity-50"
+                  motivo ? "bg-red-600 border-red-500 active:scale-95 shadow-lg shadow-red-900/40" : "bg-slate-800 border-slate-700 opacity-50"
                 }`}
               >
                 <span className="text-6xl font-black tracking-tighter">SOS</span>
@@ -143,14 +142,14 @@ export default function PaginaSOS() {
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
             <p className="font-black uppercase text-xs italic tracking-widest animate-pulse text-center">
-              Estableciendo conexión segura...<br/>Buscando señal GPS
+              Capturando ubicación...<br/>Estableciendo conexión
             </p>
           </div>
         )}
 
         {estado === "exito" && (
-          <div className="text-center">
-            <div className="w-56 h-56 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-2xl">
+          <div className="text-center animate-in zoom-in duration-300">
+            <div className="w-56 h-56 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-2xl shadow-green-900/40">
               <p className="font-black uppercase text-center leading-none text-xl tracking-tighter">Ayuda en<br/>camino</p>
             </div>
             <button 
@@ -165,8 +164,8 @@ export default function PaginaSOS() {
 
       <div className="w-full max-w-xs mb-4">
         {error && (
-          <div className="bg-red-900/50 border border-red-500 p-2 rounded-lg mb-2">
-            <p className="text-red-200 text-[10px] font-black uppercase text-center animate-bounce">{error}</p>
+          <div className="bg-red-900/50 border border-red-500 p-3 rounded-xl mb-4 text-center animate-bounce">
+            <p className="text-red-200 text-[10px] font-black uppercase tracking-tight">{error}</p>
           </div>
         )}
         <div className="bg-slate-900/40 p-3 rounded-xl border border-slate-800/50 backdrop-blur-sm">
