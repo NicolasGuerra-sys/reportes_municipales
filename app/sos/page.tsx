@@ -36,7 +36,7 @@ export default function PaginaSOS() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          // CAMBIO CLAVE: Usamos .insert() en lugar de .upsert()
+       
           const { error: dbError } = await supabase.from("alertas").insert({
             vecino_nombre: "Vecino de Coinco",
             latitud: position.coords.latitude,

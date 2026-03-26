@@ -10,10 +10,9 @@ const iconSOS = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   iconSize: [38, 55],
   iconAnchor: [19, 55],
-  popupAnchor: [0, -50] // Ajuste para que el popup salga sobre el pin
+  popupAnchor: [0, -50] 
 });
 
-// Componente para manejar el movimiento de cámara
 function RecenterMap({ coords, zoom = 18 }: { coords: [number, number] | null, zoom?: number }) {
   const map = useMap();
   useEffect(() => {
@@ -27,7 +26,6 @@ function RecenterMap({ coords, zoom = 18 }: { coords: [number, number] | null, z
 export default function MapaSOS({ alertas, ultimaCoords, alertaEnFoco }: { alertas: any[], ultimaCoords: [number, number] | null, alertaEnFoco: any }) {
   const centroCoinco: [number, number] = [-34.26, -70.95];
   
-  // Referencias para los marcadores para poder abrir el popup programáticamente
   const markerRefs = useRef<{ [key: string]: L.Marker | null }>({});
 
   const abrirNavegacion = (lat: number, lng: number) => {
@@ -35,7 +33,6 @@ export default function MapaSOS({ alertas, ultimaCoords, alertaEnFoco }: { alert
     window.open(url, "_blank");
   };
 
-  // Efecto para abrir el popup cuando se selecciona una alerta en la lista
   useEffect(() => {
     if (alertaEnFoco && markerRefs.current[alertaEnFoco.id]) {
       markerRefs.current[alertaEnFoco.id]?.openPopup();
@@ -53,8 +50,7 @@ export default function MapaSOS({ alertas, ultimaCoords, alertaEnFoco }: { alert
         url="https://mt1.google.com/vt/lyrs=y&hl=es&x={x}&y={y}&z={z}" 
         attribution="© Google Maps" 
       />
-      
-      {/* Si hay una alerta seleccionada manualmente, priorizamos esa. Si no, seguimos la última que llegó */}
+   
       <RecenterMap 
         coords={alertaEnFoco ? [alertaEnFoco.latitud, alertaEnFoco.longitud] : ultimaCoords} 
       />
