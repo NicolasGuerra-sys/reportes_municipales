@@ -28,14 +28,14 @@ export default function PaginaSOS() {
 
   const obtenerUbicacionConReintentos = (intentos = 0) => {
     const opciones = {
+      // El primer intento usa redes (rápido), los siguientes fuerzan GPS (lento pero preciso)
       enableHighAccuracy: intentos > 0, 
-      timeout: 6000, 
+      timeout: 5000, 
       maximumAge: 0
     };
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-
         const { error: dbError } = await supabase.from("alertas").upsert({
           vecino_nombre: "Vecino de Coinco",
           latitud: pos.coords.latitude,
@@ -48,17 +48,16 @@ export default function PaginaSOS() {
         if (!dbError) {
           setEstado("exito");
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          
           activarRastreoFino();
         }
       },
       (err) => {
-      
+        // Si falla (timeout o señal débil), reintentamos hasta 3 veces automáticamente
         if (intentos < 3) {
           console.log(`Reintentando obtener GPS... intento ${intentos + 1}`);
           obtenerUbicacionConReintentos(intentos + 1);
         } else {
-          setError("El GPS no responde. Por favor, asegúrate de estar al aire libre o cerca de una ventana.");
+          setError("Error de señal: Por favor, activa tu GPS y asegúrate de no estar en un subterráneo.");
           setEstado("reposo");
         }
       },
@@ -79,7 +78,7 @@ export default function PaginaSOS() {
         }, { onConflict: 'vecino_nombre' });
       },
       null,
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
@@ -143,7 +142,9 @@ export default function PaginaSOS() {
         {estado === "enviando" && (
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
-            <p className="font-black uppercase text-xs italic tracking-widest animate-pulse">Buscando Señal GPS...</p>
+            <p className="font-black uppercase text-xs italic tracking-widest animate-pulse text-center">
+              Estableciendo conexión segura...<br/>Buscando señal GPS
+            </p>
           </div>
         )}
 
@@ -164,7 +165,9 @@ export default function PaginaSOS() {
 
       <div className="w-full max-w-xs mb-4">
         {error && (
-          <p className="text-red-500 text-[10px] font-black uppercase text-center mb-2 animate-bounce">{error}</p>
+          <div className="bg-red-900/50 border border-red-500 p-2 rounded-lg mb-2">
+            <p className="text-red-200 text-[10px] font-black uppercase text-center animate-bounce">{error}</p>
+          </div>
         )}
         <div className="bg-slate-900/40 p-3 rounded-xl border border-slate-800/50 backdrop-blur-sm">
           <p className="text-slate-500 text-[12px] font-black uppercase text-center leading-tight">
