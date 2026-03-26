@@ -33,39 +33,38 @@ export default function PaginaSOS() {
       return;
     }
 
-    // Lógica idéntica a tus reportes que SÍ funciona
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const { error: dbError } = await supabase.from("alertas").upsert({
+          // CAMBIO CLAVE: Usamos .insert() en lugar de .upsert()
+          const { error: dbError } = await supabase.from("alertas").insert({
             vecino_nombre: "Vecino de Coinco",
             latitud: position.coords.latitude,
             longitud: position.coords.longitude,
             motivo: motivo,
             tipo_emergencia: "Botón SOS Web",
             estado: "Activa"
-          }, { onConflict: 'vecino_nombre' });
+          });
 
-          if (dbError) throw dbError;
+          if (dbError) {
+            setError(`Error de BD: ${dbError.message}`);
+            setEstado("reposo");
+            return;
+          }
 
           setEstado("exito");
           if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
         } catch (err) {
-          setError("Error de red. Revisa tu conexión.");
+          setError("Error crítico de red.");
           setEstado("reposo");
         }
       },
       (err) => {
-        // Errores específicos del GPS
-        if (err.code === 1) setError("Permiso denegado. Activa el GPS en el candado del navegador.");
-        else if (err.code === 2) setError("Posición no disponible. Intenta moverte un poco.");
-        else if (err.code === 3) setError("Tiempo de espera agotado. Reintenta ahora.");
-        else setError("Error desconocido al obtener ubicación.");
-        
+        setError("Error de GPS: Activa tu ubicación.");
         setEstado("reposo");
       },
       { 
-        enableHighAccuracy: false, // CLAVE: No forzar GPS satelital de entrada para evitar timeouts
+        enableHighAccuracy: false, 
         timeout: 10000, 
         maximumAge: 0 
       }
@@ -74,8 +73,7 @@ export default function PaginaSOS() {
 
   return (
     <div className="fixed inset-0 bg-[#020617] flex flex-col items-center justify-between p-6 font-sans overflow-hidden text-white">
-      
-      <div className="flex flex-col items-center mt-2 w-full">
+      <div className="flex flex-col items-center mt-2 w-full text-center">
         <div className="relative w-28 h-28 mb-2">
           <Image src="/protegido.png" alt="Logo" fill priority className="object-contain" />
         </div>
@@ -91,7 +89,7 @@ export default function PaginaSOS() {
             <select 
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
-              className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-red-500 transition-all text-center mb-10"
+              className="w-full bg-slate-900 border-2 border-slate-800 p-4 rounded-2xl text-sm font-bold text-white outline-none focus:border-red-500 transition-all text-center mb-10 appearance-none shadow-2xl"
             >
               <option value="" disabled>Seleccione una categoría</option>
               {MOTIVOS.map((m) => (
@@ -105,7 +103,7 @@ export default function PaginaSOS() {
                 onClick={enviarSOS}
                 disabled={!motivo}
                 className={`relative w-56 h-56 rounded-full border-[10px] transition-all flex flex-col items-center justify-center ${
-                  motivo ? "bg-red-600 border-red-500 active:scale-95 shadow-2xl" : "bg-slate-800 border-slate-700 opacity-50"
+                  motivo ? "bg-red-600 border-red-500 active:scale-95 shadow-[0_0_50px_rgba(220,38,38,0.3)]" : "bg-slate-800 border-slate-700 opacity-50"
                 }`}
               >
                 <span className="text-6xl font-black tracking-tighter">SOS</span>
@@ -118,14 +116,14 @@ export default function PaginaSOS() {
         {estado === "enviando" && (
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 border-4 border-slate-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
-            <p className="font-black uppercase text-xs italic tracking-widest animate-pulse">Buscando ubicación...</p>
+            <p className="font-black uppercase text-xs italic tracking-widest animate-pulse">Conectando con la central...</p>
           </div>
         )}
 
         {estado === "exito" && (
           <div className="text-center animate-in zoom-in duration-300">
-            <div className="w-64 h-64 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-2xl">
-              <p className="font-black uppercase text-center leading-none text-xl">¡Alerta enviada!<br/>Ayuda en camino</p>
+            <div className="w-64 h-64 bg-green-600 rounded-full flex flex-col items-center justify-center shadow-[0_0_50px_rgba(22,163,74,0.3)]">
+              <p className="font-black uppercase text-center leading-none text-xl tracking-tighter">¡Alerta enviada!<br/>Ayuda en camino</p>
             </div>
             <button 
               onClick={() => { setEstado("reposo"); setMotivo(""); }} 
@@ -139,11 +137,11 @@ export default function PaginaSOS() {
 
       <div className="w-full max-w-xs mb-4">
         {error && (
-          <div className="bg-red-900/50 border border-red-500 p-3 rounded-xl mb-4 text-center animate-bounce">
-            <p className="text-red-200 text-[10px] font-black uppercase">{error}</p>
+          <div className="bg-red-900/50 border border-red-500 p-3 rounded-xl mb-4 text-center">
+            <p className="text-red-200 text-[10px] font-black uppercase tracking-tight">{error}</p>
           </div>
         )}
-        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 backdrop-blur-sm">
+        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 backdrop-blur-sm shadow-inner">
           <p className="text-slate-500 text-[11px] font-black uppercase text-center leading-tight">
             ESTA ALERTA ENVIA TU POSICION GPS A SEGURIDAD MUNICIPAL.
           </p>
