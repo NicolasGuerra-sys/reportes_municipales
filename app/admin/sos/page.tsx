@@ -3,9 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
-import Image from "next/image"; //Para usar imágenes en Next.js
-import { useRouter } from "next/navigation"; // Para el botón volver
-import { ArrowLeft } from "lucide-react"; // Icono para el botón volver
+import Image from "next/image"; // IMPORTANTE: Para usar imágenes en Next.js
+import { useRouter } from "next/navigation";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 const MapaSOS = dynamic(() => import("@/components/MapaSOS"), { ssr: false });
 
@@ -13,7 +13,7 @@ export default function MonitorSOS() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [ultimaCoords, setUltimaCoords] = useState<[number, number] | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const router = useRouter(); 
+  const router = useRouter();
 
   useEffect(() => {
     fetchAlertas();
@@ -64,25 +64,52 @@ export default function MonitorSOS() {
     <div className="flex h-screen bg-slate-950 font-sans overflow-hidden text-white relative">
       <audio ref={audioRef} src="/warning.mpeg" preload="auto" />
 
+    
       <aside className="w-96 border-r border-slate-800 flex flex-col bg-slate-900 shadow-2xl z-20 relative">
-        <div className="p-6 border-b border-slate-800 bg-slate-900/50">
-          <h2 className="text-2xl font-black tracking-tighter uppercase text-white">Central SOS</h2>
-          <div className="flex items-center gap-2 mt-1 text-red-500">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em]">Monitoreo en Vivo</p>
+        
+    
+        <div className="p-0 border-b border-slate-800 bg-white">
+          <div className="w-full flex justify-center p-6">
+            <Image 
+              src="/logom.png" 
+              alt="Logo Ilustre Municipalidad de Coinco"
+              width={240}
+              height={140}
+              quality={100}
+              priority
+              className="object-contain"
+            />
+          </div>
+          
+          <div className="p-6 pt-0 text-center bg-slate-900/100">
+          <br></br>
+            <h2 className="text-2xl font-black tracking-tighter text-white leading-none">Central SOS</h2>
+            <div className="flex items-center justify-center gap-2 mt-2 text-red-500">
+              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+              <p className="text-[15px] font-black tracking-[0.2em]">Monitoreo en Vivo</p>
+            </div>
           </div>
         </div>
-        
+     
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {alertas.filter(a => a.estado === 'Activa').map((alerta) => (
             <div key={alerta.id} className="p-5 rounded-2xl border-2 border-red-500 bg-red-950/20 shadow-lg animate-pulse">
-              <div className="flex justify-between items-start mb-2">
-                <p className="font-black text-sm uppercase">{alerta.vecino_nombre || "Anónimo"}</p>
+              <div className="flex justify-between items-start mb-1">
+                <p className="font-black text-sm uppercase text-white">{alerta.vecino_nombre || "Anónimo"}</p>
                 <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black">NUEVA</span>
               </div>
+              
+              <div className="flex items-center gap-2 my-3 bg-red-600/30 p-2 rounded-lg border border-red-500/50">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="font-black text-[11px] uppercase tracking-tighter text-red-200">
+                  Motivo: {alerta.motivo || "No especificado"}
+                </p>
+              </div>
+
               <p className="text-slate-400 text-[10px] font-bold mb-4 italic">
                 {new Date(alerta.created_at).toLocaleTimeString()}
               </p>
+              
               <button 
                 onClick={() => atenderAlerta(alerta.id)}
                 className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-black py-3 rounded-xl uppercase transition-all shadow-md active:scale-95"
@@ -97,7 +124,7 @@ export default function MonitorSOS() {
       <main className="flex-1 relative z-10">
         <MapaSOS alertas={alertas} ultimaCoords={ultimaCoords} />
       </main>
-     
+
       <button 
         onClick={() => router.push("/admin")} 
         className="absolute bottom-6 right-6 z-30 flex items-center gap-2.5 text-slate-900 font-extrabold text-[12px] uppercase hover:text-red-600 transition-colors tracking-widest p-4 px-6 bg-white rounded-full border border-slate-200 shadow-xl hover:shadow-2xl active:scale-95"
