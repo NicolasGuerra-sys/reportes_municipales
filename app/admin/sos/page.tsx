@@ -12,9 +12,22 @@ const MapaSOS = dynamic(() => import("@/components/MapaSOS"), { ssr: false });
 export default function MonitorSOS() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [ultimaCoords, setUltimaCoords] = useState<[number, number] | null>(null);
-  const [alertaEnFoco, setAlertaEnFoco] = useState<any>(null); // NUEVO: Estado para selección manual
+  const [alertaEnFoco, setAlertaEnFoco] = useState<any>(null); 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const router = useRouter();
+
+useEffect(() => {
+  if ('wakeLock' in navigator) {
+    const requestWakeLock = async () => {
+      try {
+        await (navigator as any).wakeLock.request('screen');
+      } catch (err) {
+        console.log("No se pudo bloquear el apagado de pantalla");
+      }
+    };
+    requestWakeLock();
+  }
+}, []);
 
   useEffect(() => {
     fetchAlertas();
@@ -94,7 +107,7 @@ export default function MonitorSOS() {
           {alertas.filter(a => a.estado === 'Activa').map((alerta) => (
             <div 
               key={alerta.id} 
-              onClick={() => setAlertaEnFoco(alerta)} // NUEVO: Al hacer clic selecciona la alerta
+              onClick={() => setAlertaEnFoco(alerta)} 
               className={`p-5 rounded-2xl border-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg ${
                 alertaEnFoco?.id === alerta.id 
                 ? "border-blue-500 bg-blue-900/40 animate-none scale-[1.02]" 
@@ -119,7 +132,7 @@ export default function MonitorSOS() {
               
               <button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Evita que el botón active el movimiento del mapa
+                  e.stopPropagation(); 
                   atenderAlerta(alerta.id);
                 }}
                 className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-black py-3 rounded-xl uppercase transition-all shadow-md active:scale-95"
@@ -132,7 +145,7 @@ export default function MonitorSOS() {
       </aside>
 
       <main className="flex-1 relative z-10">
-        {/* Pasamos alertaEnFoco como prop al mapa */}
+     
         <MapaSOS alertas={alertas} ultimaCoords={ultimaCoords} alertaEnFoco={alertaEnFoco} />
       </main>
 

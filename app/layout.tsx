@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Reportes Municipales Coinco",
   description: "Plataforma ciudadana para el reporte de problemas en la vía pública",
+  manifest: "/manifest.json",
+};
+
+export const viewport = {
+  themeColor: "#020617", 
 };
 
 export default function RootLayout({

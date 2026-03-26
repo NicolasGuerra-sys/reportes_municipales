@@ -1,0 +1,22 @@
+{
+  "name": "Coinco Protegido",
+  "short_name": "SOS Coinco",
+  "description": "Sistema de Emergencias Municipal de Coinco",
+  "start_url": "/sos",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/protegido.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/protegido.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
