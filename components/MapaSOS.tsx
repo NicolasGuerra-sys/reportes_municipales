@@ -3,32 +3,44 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ExternalLink, AlertTriangle } from "lucide-react";
 
 const iconSOS = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   iconSize: [38, 55],
   iconAnchor: [19, 55],
+  popupAnchor: [0, -50] // Ajuste para que el popup salga sobre el pin
 });
 
-function RecenterMap({ coords }: { coords: [number, number] | null }) {
+// Componente para manejar el movimiento de cámara
+function RecenterMap({ coords, zoom = 18 }: { coords: [number, number] | null, zoom?: number }) {
   const map = useMap();
   useEffect(() => {
     if (coords) {
-      map.setView(coords, 18, { animate: true });
+      map.setView(coords, zoom, { animate: true, duration: 1 });
     }
-  }, [coords, map]);
+  }, [coords, map, zoom]);
   return null;
 }
 
-export default function MapaSOS({ alertas, ultimaCoords }: { alertas: any[], ultimaCoords: [number, number] | null }) {
+export default function MapaSOS({ alertas, ultimaCoords, alertaEnFoco }: { alertas: any[], ultimaCoords: [number, number] | null, alertaEnFoco: any }) {
   const centroCoinco: [number, number] = [-34.26, -70.95];
+  
+  // Referencias para los marcadores para poder abrir el popup programáticamente
+  const markerRefs = useRef<{ [key: string]: L.Marker | null }>({});
 
   const abrirNavegacion = (lat: number, lng: number) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
     window.open(url, "_blank");
   };
+
+  // Efecto para abrir el popup cuando se selecciona una alerta en la lista
+  useEffect(() => {
+    if (alertaEnFoco && markerRefs.current[alertaEnFoco.id]) {
+      markerRefs.current[alertaEnFoco.id]?.openPopup();
+    }
+  }, [alertaEnFoco]);
 
   return (
     <MapContainer 
@@ -42,13 +54,17 @@ export default function MapaSOS({ alertas, ultimaCoords }: { alertas: any[], ult
         attribution="© Google Maps" 
       />
       
-      <RecenterMap coords={ultimaCoords} />
+      {/* Si hay una alerta seleccionada manualmente, priorizamos esa. Si no, seguimos la última que llegó */}
+      <RecenterMap 
+        coords={alertaEnFoco ? [alertaEnFoco.latitud, alertaEnFoco.longitud] : ultimaCoords} 
+      />
       
       {alertas.filter(a => a.estado === 'Activa').map((alerta) => (
         <Marker 
           key={alerta.id} 
           position={[alerta.latitud, alerta.longitud]} 
           icon={iconSOS}
+          ref={(el) => { markerRefs.current[alerta.id] = el; }} // Guardamos la referencia
         >
           <Popup maxWidth={350} minWidth={300}>
             <div className="text-center font-sans p-3 flex flex-col items-center gap-3">
@@ -66,7 +82,6 @@ export default function MapaSOS({ alertas, ultimaCoords }: { alertas: any[], ult
                   {alerta.vecino_nombre}
                 </p>
 
-                {/* MOTIVO DENTRO DEL POPUP */}
                 <div className="flex items-center justify-center gap-2 mb-4 bg-red-100 p-2 rounded-lg border border-red-200">
                   <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
                   <p className="font-black text-[11px] uppercase tracking-tighter text-red-700">

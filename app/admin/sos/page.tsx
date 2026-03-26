@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
-import Image from "next/image"; // IMPORTANTE: Para usar imágenes en Next.js
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
@@ -12,6 +12,7 @@ const MapaSOS = dynamic(() => import("@/components/MapaSOS"), { ssr: false });
 export default function MonitorSOS() {
   const [alertas, setAlertas] = useState<any[]>([]);
   const [ultimaCoords, setUltimaCoords] = useState<[number, number] | null>(null);
+  const [alertaEnFoco, setAlertaEnFoco] = useState<any>(null); // NUEVO: Estado para selección manual
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const router = useRouter();
 
@@ -57,6 +58,7 @@ export default function MonitorSOS() {
 
   const atenderAlerta = async (id: string) => {
     await supabase.from("alertas").update({ estado: 'Atendida' }).eq("id", id);
+    if (alertaEnFoco?.id === id) setAlertaEnFoco(null); // Limpiar foco si se atiende
     fetchAlertas();
   };
 
@@ -64,10 +66,7 @@ export default function MonitorSOS() {
     <div className="flex h-screen bg-slate-950 font-sans overflow-hidden text-white relative">
       <audio ref={audioRef} src="/warning.mpeg" preload="auto" />
 
-    
       <aside className="w-96 border-r border-slate-800 flex flex-col bg-slate-900 shadow-2xl z-20 relative">
-        
-    
         <div className="p-0 border-b border-slate-800 bg-white">
           <div className="w-full flex justify-center p-6">
             <Image 
@@ -82,7 +81,7 @@ export default function MonitorSOS() {
           </div>
           
           <div className="p-6 pt-0 text-center bg-slate-900/100">
-          <br></br>
+            <br />
             <h2 className="text-2xl font-black tracking-tighter text-white leading-none">Central SOS</h2>
             <div className="flex items-center justify-center gap-2 mt-2 text-red-500">
               <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
@@ -93,7 +92,15 @@ export default function MonitorSOS() {
      
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {alertas.filter(a => a.estado === 'Activa').map((alerta) => (
-            <div key={alerta.id} className="p-5 rounded-2xl border-2 border-red-500 bg-red-950/20 shadow-lg animate-pulse">
+            <div 
+              key={alerta.id} 
+              onClick={() => setAlertaEnFoco(alerta)} // NUEVO: Al hacer clic selecciona la alerta
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg ${
+                alertaEnFoco?.id === alerta.id 
+                ? "border-blue-500 bg-blue-900/40 animate-none scale-[1.02]" 
+                : "border-red-500 bg-red-950/20 animate-pulse"
+              }`}
+            >
               <div className="flex justify-between items-start mb-1">
                 <p className="font-black text-sm uppercase text-white">{alerta.vecino_nombre || "Anónimo"}</p>
                 <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black">NUEVA</span>
@@ -111,7 +118,10 @@ export default function MonitorSOS() {
               </p>
               
               <button 
-                onClick={() => atenderAlerta(alerta.id)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita que el botón active el movimiento del mapa
+                  atenderAlerta(alerta.id);
+                }}
                 className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-black py-3 rounded-xl uppercase transition-all shadow-md active:scale-95"
               >
                 Marcar como Atendida
@@ -122,7 +132,8 @@ export default function MonitorSOS() {
       </aside>
 
       <main className="flex-1 relative z-10">
-        <MapaSOS alertas={alertas} ultimaCoords={ultimaCoords} />
+        {/* Pasamos alertaEnFoco como prop al mapa */}
+        <MapaSOS alertas={alertas} ultimaCoords={ultimaCoords} alertaEnFoco={alertaEnFoco} />
       </main>
 
       <button 
